@@ -1,0 +1,8 @@
+[Unit]
+Description=Cockpitlogin Service Socket
+
+[Socket]
+ListenStream=/run/cockpitlogin/socket
+
+[Install]
+WantedBy=sockets.target

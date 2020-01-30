@@ -1,0 +1,7 @@
+[Unit]
+Description=Cockpitlogin Service
+Requires=cockpitlogin.socket
+
+[Service]
+ExecStart=/opt/cockpitlogin
+
