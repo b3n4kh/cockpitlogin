@@ -9,8 +9,12 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"os/user"
+	"strings"
+
+	"github.com/sethvargo/go-password/password"
 )
 
 func setupSocket(socketPath string) (listener net.Listener) {
@@ -41,13 +45,24 @@ func httpListener(listener net.Listener) {
 	}
 }
 
-func setPassword(username string) (password string, err error) {
+func setPassword(username string) (passwd string, err error) {
 	u, err := user.Lookup(username)
 	if err != nil {
 		return "", err
 	}
 	fmt.Println(u.Name)
-	return "1234", nil
+	pass, err := password.Generate(64, 10, 0, false, true)
+	if err != nil {
+		return "", err
+	}
+	// echo "new_password" | passwd --stdin user
+	cmd := exec.Command("/usr/bin/sudo", "/usr/bin/passwd", "--stdin", username)
+	cmd.Stdin = strings.NewReader(pass)
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	return pass, nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -58,10 +73,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	password, err := setPassword(user)
+	if err != nil {
+		w.WriteHeader(401)
+		fmt.Println(err.Error())
+		w.Write([]byte("Could not set Password"))
+		return
+	}
 
 	cockpitCookie, csrf, err := getCookie(user + ":" + password)
 	if err != nil {
 		w.WriteHeader(401)
+		fmt.Println(err.Error())
 		w.Write([]byte("Could not get Cookie"))
 		return
 	}
