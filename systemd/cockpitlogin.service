@@ -1,8 +1,0 @@
-[Unit]
-Description=Cockpitlogin Service
-Requires=cockpitlogin.socket
-
-[Service]
-ExecStartPre=/usr/bin/rm -f /run/cockpitlogin/socket
-ExecStart=/opt/cockpitlogin
-
