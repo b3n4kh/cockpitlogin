@@ -1,7 +1,9 @@
 [Unit]
 Description=Cockpitlogin Service
-Requires=cockpitlogin.socket
 
 [Service]
 ExecStart=/usr/bin/cockpitlogin
+ExecStartPost=/usr/sbin/restorecon -R /var/run/cockpitlogin/ 
 RuntimeDirectory=cockpitlogin
+User=cockpitlogin
+Group=nginx
